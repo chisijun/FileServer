@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- spring 包的扫描
+ 1)dao
+ 2)service (@Service)
+ 3)controller(@Controller)
+ 4).....
+ -->
+    <context:component-scan base-package="org.chisj.file" />
+	<!-- 
+    <bean id="applicationContextUtil" class ="com.csun.dryer.utils.ApplicationContextUtil"></bean>
+ 	-->
+ 	<!-- 
+    <bean id="redisUtil" class="com.csun.dryer.utils.RedisUtil">
+        <property name="redisTemplate" ref="redisTemplate" />
+    </bean>
+ 	-->
+    <!-- 自动代理aop -->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+    <!-- spring mvc 注解及类型转换 -->
+    <!--<mvc:annotation-driven conversion-service="conversionService" />-->
+    <!-- 注册RequestMappingHandlerMapping 和RequestMappingHandlerAdapter 两个bean。-->
+
+
+    <bean id="conversionService"
+          class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+    </bean>
+
+	<!--避免IE执行AJAX时，返回JSON出现下载文件 -->    
+    <bean id="mappingJacksonHttpMessageConverter"    
+        class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">    
+        <property name="supportedMediaTypes">    
+            <list>    
+                <value>text/html;charset=UTF-8</value>
+                <value>application/json;charset=UTF-8</value>    
+            </list>    
+        </property>    
+    </bean>
+
+
+    <!-- 配置校验器 -->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <!-- 校验器，使用hibernate校验器 -->
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+        <!-- 指定校验使用的资源文件，在文件中配置校验错误信息，如果不指定则默认使用classpath下面的ValidationMessages.properties文件 -->
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>
+
+    <!-- 校验错误信息配置文件 -->
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <!-- 资源文件名 -->
+        <property name="basenames">
+            <list>
+                <value>classpath:validation</value>
+            </list>
+        </property>
+        <!-- 资源文件编码格式 -->
+        <property name="fileEncodings" value="utf-8"/>
+        <!-- 对资源文件内容缓存时间，单位秒 -->
+        <property name="cacheSeconds" value="120"/>
+    </bean>
+
+    <!-- 添加注解驱动 -->
+    <mvc:annotation-driven validator="validator" conversion-service="conversionService">
+        <!-- 
+        <mvc:argument-resolvers>
+            <bean class="com.csun.dryer.resolvers.CurrentUserMethodArgumentResolver"/>
+        </mvc:argument-resolvers>
+         -->
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="objectMapper">
+                    <bean class="org.chisj.file.utils.JsonObjectMapper"></bean>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!-- spring mvc 视图解析器 -->
+    <!-- 定义跳转的文件的前后缀 ，视图模式配置 -->
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- 自动给后面action的方法return的字符串加上前缀和后缀，变成一个 可用的url地址 -->
+        <property name="prefix" value="/WEB-INF/pages/" />
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+    <!-- 文件上传需要配置此解析器
+       找类的快捷键为:ctrl+shift+t
+       查看本类方法：ctrl+o,假如想继续看父类方法继续ctrl+o
+    -->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 默认编码 -->
+        <property name="defaultEncoding" value="utf-8" />
+        <!-- 文件大小最大值 -->
+        <property name="maxUploadSize" value="10485760000" />
+        <!-- 内存中的最大值 -->
+        <property name="maxInMemorySize" value="40960" />
+    </bean>
+
+    <mvc:default-servlet-handler/>
+
+    <!-- 实例化对象batteryBean,自动调用MqttClientSubUtil构造函数 -->
+    <!-- 
+    <bean id="batteryBean" class="com.csun.dryer.device.MqttClientSubUtil"></bean>
+	 -->
+	<!-- 实例化unionpay配置对象 -->
+	<!-- 
+	<bean id="unionPayConfig" class="com.csun.dryer.utils.unionpay.sdk.SDKConfig" init-method="loadSDK"></bean>
+	 -->
+</beans>
