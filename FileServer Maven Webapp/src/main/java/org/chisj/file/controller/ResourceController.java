@@ -41,7 +41,7 @@ import com.github.pagehelper.PageInfo;
  * ClassName: ResourceController 
  * @Description: 资源管理控制器
  * @author chisj chisj@foxmail.com
- * @date 2018年4月9日
+ * @date 2018年4月10日
  */
 @RestController
 @RequestMapping("/Resource")
